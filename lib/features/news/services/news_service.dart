@@ -23,25 +23,22 @@ class NewsService {
 
   Future<List<NewsModel>> getNews({int page = 1, int size = 10, int? categoryId}) async {
     try {
-      final response = await _dioClient.dio.get('/api/News/getall', queryParameters: {
-        'page': page,
-        'size': size,
-        'categoryId': ?categoryId,
-      });
-      final List data = response.data['data'] ?? [];
-      return data.map((json) => NewsModel.fromJson(json)).toList();
+      if (categoryId != null && categoryId > 0) {
+        final response = await _dioClient.dio.get('/api/News/getbycategoryid', queryParameters: {
+          'id': categoryId,
+        });
+        final List data = response.data['data'] ?? [];
+        return data.map((json) => NewsModel.fromJson(json as Map<String, dynamic>)).toList();
+      } else {
+        final response = await _dioClient.dio.get('/api/News/getnewsbydetails', queryParameters: {
+          'page': page,
+          'pageSize': size,
+        });
+        final List data = response.data['data'] ?? [];
+        return data.map((json) => NewsModel.fromJson(json as Map<String, dynamic>)).toList();
+      }
     } catch (e) {
-      // Dummy data fallback
-      return List.generate(size, (index) => NewsModel(
-        id: index,
-        title: 'Örnek Haber Başlığı $index - YalınNews',
-        slug: 'ornek-haber-$index',
-        content: '<p>Bu bir örnek haber içeriğidir.</p>',
-        imageUrl: 'https://picsum.photos/seed/$index/400/200',
-        categoryName: 'Teknoloji',
-        author: 'Editör',
-        createdAt: DateTime.now().subtract(Duration(hours: index)),
-      ));
+      throw Exception('Haberler yüklenirken bir hata oluştu: $e');
     }
   }
 

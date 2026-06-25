@@ -45,6 +45,11 @@ class ScaffoldWithNavBar extends ConsumerWidget {
                 label: 'Ana Sayfa',
               ),
               NavigationDestination(
+                icon: const Icon(Icons.search, color: AppColors.textMuted),
+                selectedIcon: _buildSelectedIcon(Icons.search),
+                label: 'Keşfet',
+              ),
+              NavigationDestination(
                 icon: const Icon(Icons.bookmark_border, color: AppColors.textMuted),
                 selectedIcon: _buildSelectedIcon(Icons.bookmark),
                 label: 'Favoriler',
@@ -78,11 +83,14 @@ class ScaffoldWithNavBar extends ConsumerWidget {
     if (location.startsWith('/home')) {
       return 0;
     }
-    if (location.startsWith('/favorites')) {
+    if (location.startsWith('/search')) {
       return 1;
     }
-    if (location.startsWith('/profile') || location.startsWith('/login')) {
+    if (location.startsWith('/favorites')) {
       return 2;
+    }
+    if (location.startsWith('/profile') || location.startsWith('/login')) {
+      return 3;
     }
     return 0;
   }
@@ -93,9 +101,12 @@ class ScaffoldWithNavBar extends ConsumerWidget {
         context.go('/home');
         break;
       case 1:
-        context.go('/favorites');
+        context.go('/search');
         break;
       case 2:
+        context.go('/favorites');
+        break;
+      case 3:
         if (isAuthenticated) {
           context.go('/profile');
         } else {

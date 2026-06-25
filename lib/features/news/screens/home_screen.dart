@@ -6,6 +6,7 @@ import '../models/news_model.dart';
 import '../../../shared/widgets/news_card.dart';
 import '../../../shared/widgets/hero_news_card.dart';
 import '../../../shared/widgets/category_chip.dart';
+import '../../../shared/widgets/yalin_app_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -42,40 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final selectedCategory = ref.watch(selectedCategoryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'YalınNews',
-          style: TextStyle(
-            color: Color(0xFFD4AF37),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        actions: [
-          Container(
-            width: 32,
-            height: 32,
-            margin: const EdgeInsets.only(right: 8),
-            decoration: const BoxDecoration(color: Color(0xFF1A1A1A), shape: BoxShape.circle),
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.search, size: 18),
-              onPressed: () {},
-            ),
-          ),
-          Container(
-            width: 32,
-            height: 32,
-            margin: const EdgeInsets.only(right: 16),
-            decoration: const BoxDecoration(color: Color(0xFF1A1A1A), shape: BoxShape.circle),
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.notifications_none, size: 18),
-              onPressed: () {},
-            ),
-          ),
-        ],
-      ),
+      appBar: const YalinAppBar(),
       body: RefreshIndicator(
         onRefresh: () async {
           await ref.read(newsListProvider.notifier).fetchFirstPage();
@@ -83,71 +51,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            // Breaking News Banner
-            SliverToBoxAdapter(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                  border: Border.all(color: const Color(0xFF334155).withValues(alpha: 0.5)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.circle, color: Color(0xFFEF4444), size: 6),
-                          SizedBox(width: 4),
-                          Text(
-                            'SON DAKİKA',
-                            style: TextStyle(
-                              color: Color(0xFFEF4444), 
-                              fontSize: 10, 
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        'Yapay zeka modelleri sınırları zorluyor: Yeni gelişmeler!',
-                        style: TextStyle(
-                          color: Color(0xFFE2E8F0), 
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
             // Categories
             SliverToBoxAdapter(
               child: SizedBox(
@@ -156,6 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   data: (categories) {
                     final allCategories = [
                       CategoryModel(id: 0, name: 'Tümü'),
+                      CategoryModel(id: -1, name: 'Sana Özel'),
                       ...categories,
                     ];
                     return ListView.builder(

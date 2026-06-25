@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/news_service.dart';
 import '../models/news_model.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/providers/preferences_provider.dart';
 
 final newsServiceProvider = Provider((ref) {
   final client = ref.watch(dioClientProvider);
@@ -67,11 +68,23 @@ class NewsNotifier extends Notifier<NewsPaginationState> {
     try {
       final service = ref.read(newsServiceProvider);
       final category = ref.read(selectedCategoryProvider);
-      final news = await service.getNews(page: 1, categoryId: category?.id);
+      
+      List<NewsModel> fetchedNews = [];
+      if (category?.id == -1) {
+        final prefs = ref.read(preferencesProvider);
+        // Fetch a bit more to ensure we have content after filtering
+        final rawNews1 = await service.getNews(page: 1);
+        final rawNews2 = await service.getNews(page: 2);
+        final combined = [...rawNews1, ...rawNews2];
+        fetchedNews = combined.where((n) => prefs.contains(n.categoryName)).toList();
+      } else {
+        fetchedNews = await service.getNews(page: 1, categoryId: category?.id == 0 ? null : category?.id);
+      }
+
       state = state.copyWith(
-        news: news,
+        news: fetchedNews,
         isLoading: false,
-        hasMore: news.length == 10,
+        hasMore: fetchedNews.length == 10,
         page: 2,
       );
     } catch (e) {
@@ -86,11 +99,23 @@ class NewsNotifier extends Notifier<NewsPaginationState> {
     try {
       final service = ref.read(newsServiceProvider);
       final category = ref.read(selectedCategoryProvider);
-      final news = await service.getNews(page: state.page, categoryId: category?.id);
+      
+      List<NewsModel> fetchedNews = [];
+      if (category?.id == -1) {
+        final prefs = ref.read(preferencesProvider);
+        final rawNews1 = await service.getNews(page: state.page + 1);
+        final rawNews2 = await service.getNews(page: state.page + 2);
+        final combined = [...rawNews1, ...rawNews2];
+        fetchedNews = combined.where((n) => prefs.contains(n.categoryName)).toList();
+        state = state.copyWith(page: state.page + 2);
+      } else {
+        fetchedNews = await service.getNews(page: state.page, categoryId: category?.id == 0 ? null : category?.id);
+      }
+
       state = state.copyWith(
-        news: [...state.news, ...news],
+        news: [...state.news, ...fetchedNews],
         isLoading: false,
-        hasMore: news.length == 10,
+        hasMore: fetchedNews.length == 10,
         page: state.page + 1,
       );
     } catch (e) {

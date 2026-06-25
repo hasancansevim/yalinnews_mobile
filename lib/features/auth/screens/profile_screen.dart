@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -23,19 +24,15 @@ class ProfileScreen extends ConsumerWidget {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 32),
-          const Text('Bildirim Tercihleri', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text('Kişiselleştirme', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          SwitchListTile(
-            title: const Text('Teknoloji Haberleri'),
-            value: true,
-            onChanged: (val) {
-              // TODO: Update FCM topic subscription
+          ListTile(
+            leading: const Icon(Icons.category),
+            title: const Text('İlgi Alanlarımı Düzenle'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              context.push('/onboarding');
             },
-          ),
-          SwitchListTile(
-            title: const Text('Ekonomi Haberleri'),
-            value: false,
-            onChanged: (val) {},
           ),
           const Divider(),
           ListTile(
