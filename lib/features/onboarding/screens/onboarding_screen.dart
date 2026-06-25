@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/providers/preferences_provider.dart';
+import '../../news/providers/news_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -12,20 +13,10 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  final List<String> _availableCategories = [
-    'Ekonomi',
-    'Spor',
-    'Teknoloji',
-    'Dünya',
-    'Siyaset',
-    'Sağlık',
-    'Kültür-Sanat',
-    'Magazin'
-  ];
-
   @override
   Widget build(BuildContext context) {
     final selectedCategories = ref.watch(preferencesProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -55,34 +46,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
               const SizedBox(height: 40),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 16,
-                    children: _availableCategories.map((category) {
-                      final isSelected = selectedCategories.contains(category);
-                      return ChoiceChip(
-                        label: Text(category),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          ref.read(preferencesProvider.notifier).toggleCategory(category);
-                        },
-                        labelStyle: TextStyle(
-                          color: isSelected ? Colors.black : Theme.of(context).colorScheme.onSurface,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                        selectedColor: AppColors.primary,
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        side: BorderSide(
-                          color: isSelected ? AppColors.primary : AppColors.divider,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                child: categoriesAsync.when(
+                  data: (categories) {
+                    return SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 12,
+                        runSpacing: 16,
+                        children: categories.map((category) {
+                          final categoryName = category.name;
+                          final isSelected = selectedCategories.contains(categoryName);
+                          return ChoiceChip(
+                            label: Text(categoryName),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              ref.read(preferencesProvider.notifier).toggleCategory(categoryName);
+                            },
+                            labelStyle: TextStyle(
+                              color: isSelected ? Colors.black : Theme.of(context).colorScheme.onSurface,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            selectedColor: AppColors.primary,
+                            backgroundColor: Theme.of(context).colorScheme.surface,
+                            side: BorderSide(
+                              color: isSelected ? AppColors.primary : AppColors.divider,
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, st) => Center(child: Text('Kategoriler yüklenemedi.')),
                 ),
               ),
               SizedBox(
@@ -92,7 +90,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   onPressed: () async {
                     await ref.read(preferencesProvider.notifier).completeOnboarding();
                     if (!context.mounted) return;
-                    context.go('/');
+                    context.go('/home');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
